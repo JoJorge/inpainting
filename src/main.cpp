@@ -4,9 +4,14 @@
 //
 //  Created by Sooham Rafiz on 2016-05-16.
 
+/*
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/core/core.hpp"
+*/
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/core.hpp>
 
 #include <iostream>
 #include <string>
@@ -24,13 +29,14 @@
 
 int main (int argc, char** argv) {
     // --------------- read filename strings ------------------
-    std::string colorFilename, maskFilename;
+    std::string colorFilename, maskFilename, resultFilename;
     
-    if (argc == 3) {
+    if (argc == 4) {
         colorFilename = argv[1];
         maskFilename = argv[2];
+        resultFilename = argv[3];
     } else {
-        std::cerr << "Usage: ./inpainting colorImageFile maskImageFile" << std::endl;
+        std::cerr << "Usage: ./inpainting colorImageFile maskImageFile resultFilename " << std::endl;
         return -1;
     }
     
@@ -155,7 +161,11 @@ int main (int argc, char** argv) {
         // update maskMat
         maskMat = (confidenceMat != 0.0f);
     }
-    
+  
+    // change colorMat back to 0 - 255
+    colorMat *= 255;
+    colorMat.convertTo(colorMat, CV_8U);
+    cv::imwrite(resultFilename, colorMat);
     showMat("final result", colorMat, 0);
     return 0;
 }
