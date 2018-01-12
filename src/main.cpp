@@ -23,6 +23,8 @@
  * disable assertions.
  */
 
+//#define DEBUG 1
+
 #ifndef DEBUG
     #define DEBUG 0
 #endif
@@ -44,7 +46,8 @@ int main (int argc, char** argv) {
     // colorMat     - color picture + border
     // maskMat      - mask picture + border
     // grayMat      - gray picture + border
-    cv::Mat colorMat, maskMat, grayMat;
+    // maskMatBlack - mask picture + black border, for erosion
+    cv::Mat colorMat, maskMat, grayMat, maskMatBlack;
     loadInpaintingImages(
                          colorFilename,
                          maskFilename,
@@ -57,15 +60,18 @@ int main (int argc, char** argv) {
     cv::Mat confidenceMat;
     maskMat.convertTo(confidenceMat, CV_32F);
     confidenceMat /= 255.0f;
-    
+   
     // add borders around maskMat and confidenceMat
+    cv::copyMakeBorder(maskMat, maskMatBlack,
+                       RADIUS, RADIUS, RADIUS, RADIUS,
+                       cv::BORDER_CONSTANT, 0);
     cv::copyMakeBorder(maskMat, maskMat,
                        RADIUS, RADIUS, RADIUS, RADIUS,
                        cv::BORDER_CONSTANT, 255);
     cv::copyMakeBorder(confidenceMat, confidenceMat,
                        RADIUS, RADIUS, RADIUS, RADIUS,
                        cv::BORDER_CONSTANT, 0.0001f);
-    
+
     // ---------------- start the algorithm -----------------
     
     contours_t contours;            // mask contours
@@ -99,7 +105,7 @@ int main (int argc, char** argv) {
     cv::Mat templateMask;       // mask for template match (3 channel)
     
     // eroded mask is used to ensure that psiHatQ is not overlapping with target
-    cv::erode(maskMat, erodedMask, cv::Mat(), cv::Point(-1, -1), RADIUS);
+    cv::erode(maskMatBlack, erodedMask, cv::Mat(), cv::Point(-1, -1), RADIUS);
     
     cv::Mat drawMat;
     
@@ -146,7 +152,7 @@ int main (int argc, char** argv) {
         if (DEBUG) {
         cv::rectangle(drawMat, psiHatP - cv::Point(RADIUS, RADIUS), psiHatP + cv::Point(RADIUS+1, RADIUS+1), cv::Scalar(255, 0, 0));
         cv::rectangle(drawMat, psiHatQ - cv::Point(RADIUS, RADIUS), psiHatQ + cv::Point(RADIUS+1, RADIUS+1), cv::Scalar(0, 0, 255));
-        showMat("red - psiHatQ", drawMat);
+        showMat("red - psiHatQ", drawMat, 500);
         }
         // updates
         // copy from psiHatQ to psiHatP for each colorspace

@@ -39,8 +39,8 @@ void loadInpaintingImages(
     for (int i = 0; i < maskMat.rows; i++) {
         for(int j = 0; j < maskMat.cols; j++) {
             int intensity = maskMat.at<uchar>(i, j);
-            assert(intensity == 0 || intensity == 255);
-            if (intensity == 0) {
+            // assert(intensity == 0 || intensity == 255);
+            if (intensity < 128) {
                 maskMat.at<uchar>(i, j) = 255;
             }
             else {
@@ -60,7 +60,6 @@ void loadInpaintingImages(
                        cv::BORDER_CONSTANT,
                        cv::Scalar_<float>(0,0,0)
                        );
-    
     cv::cvtColor(colorMat, grayMat, CV_BGR2GRAY);
 }
 
